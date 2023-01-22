@@ -90,7 +90,7 @@ Create a tool that receives cmdline arguments like described at the beginning of
 1. Rsync the local flakes to the remote.  
   (We could evaluate the store path of the local flake first to ensure we omit git ignored files, though this will cost performance on large repos)
 
-1. `ssh` into to the remote host and execute the nix command passed to `edict` while replacing all arguments that reference a local flake with the mapped remote path.
+1. `ssh` into to the remote host and execute the nix command passed to `edict` while replacing all local flake refs with its remote counter parts.
 
 1. Pass through stdout and stderr to the user to make it feel like the command was executed locally.
 
@@ -99,7 +99,7 @@ Create a tool that receives cmdline arguments like described at the beginning of
 1. If the current directory has been passed as a flake ref, rsync back any changes that happened on it.
 
 ## Difficulties:
-Is the user issues a nix command via `edict`, we don't know if they intend to modify the contents of the current directory or not.
+If the user issues a nix command via `edict`, we don't know if they intend to modify the contents of the current directory or not.
 
 ### Examples
 Here the user intends to modify the local repo:
@@ -121,8 +121,8 @@ Therefore before each remote execution, we need to decide if it is a `stateful` 
 I suggest we have a heuristic that decides that, but offer the user flags like `--sync` and `--no-sync` to override the behavior.
 
 The heuristic could work like that:  
-If any of the flakes referenced in the `edict` command corresponds to the current directory, use the `stateful` mode, otherwise the `steleless` mode. 
+Only if the current directory is passed as a flake ref, use the `stateful` mode, otherwise the `stateless` mode. 
 
 ### Future ideas
-- Execute a nix command on multiple hosts in parallel
+- Execute a nix command on multiple hosts in parallel.
 - Given a list of builders, automatically pick one matching the required `system`.
